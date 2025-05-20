@@ -132,13 +132,9 @@ export const DonationModal: React.FC<DonationModalProps> = ({
               <span>Donation</span>
               <span>{amount} ETH</span>
             </div>
-            <div className="flex justify-between text-sm mb-2">
-              <span>Network fee (est.)</span>
-              <span>0.002 ETH</span>
-            </div>
             <div className="border-t border-border pt-2 mt-2 flex justify-between font-medium">
               <span>Total</span>
-              <span>{(parseFloat(amount) + 0.002).toFixed(3)} ETH</span>
+              <span>{amount} ETH</span>
             </div>
           </div>
         </div>
