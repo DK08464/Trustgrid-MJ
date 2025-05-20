@@ -12,6 +12,18 @@ const ThemeSwitcher: React.FC = () => {
   });
 
   useEffect(() => {
+    // Apply initial theme on page load
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+      setTheme('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      setTheme('light');
+    }
+  }, []);
+
+  useEffect(() => {
     const root = window.document.documentElement;
     
     if (theme === 'dark') {
@@ -33,6 +45,7 @@ const ThemeSwitcher: React.FC = () => {
       size="icon" 
       onClick={toggleTheme}
       className="rounded-full w-9 h-9 p-0"
+      aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
     >
       {theme === 'light' ? (
         <Moon className="h-5 w-5" />
