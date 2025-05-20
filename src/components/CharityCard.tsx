@@ -36,7 +36,7 @@ const CharityCard: React.FC<CharityProps> = ({
   const progress = Math.min(100, Math.round((raised / goal) * 100));
 
   return (
-    <Card className="overflow-hidden hover:card-shadow transition-all duration-300 h-full">
+    <Card className="overflow-hidden hover:card-shadow transition-all duration-300 h-full dark:border-gray-700 dark:bg-gray-800">
       <div className="h-48 overflow-hidden">
         <img 
           src={image} 
@@ -46,7 +46,7 @@ const CharityCard: React.FC<CharityProps> = ({
       </div>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
-          <span className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-charity-light-purple text-charity-purple">
+          <span className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-charity-light-purple text-charity-purple dark:bg-gray-700 dark:text-charity-purple">
             {category}
           </span>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -54,7 +54,7 @@ const CharityCard: React.FC<CharityProps> = ({
           </svg>
         </div>
         <CardTitle className="text-xl">{name}</CardTitle>
-        <CardDescription className="h-16 line-clamp-2">
+        <CardDescription className="h-16 line-clamp-2 dark:text-gray-300">
           {description}
         </CardDescription>
       </CardHeader>
@@ -64,15 +64,15 @@ const CharityCard: React.FC<CharityProps> = ({
         </div>
         <div className="flex justify-between text-sm">
           <span className="font-medium text-charity-purple">{raised} ETH raised</span>
-          <span className="text-gray-500">Goal: {goal} ETH</span>
+          <span className="text-gray-500 dark:text-gray-400">Goal: {goal} ETH</span>
         </div>
-        <div className="mt-4 text-sm text-gray-500">
+        <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
           {donorsCount} donors have contributed
         </div>
       </CardContent>
       <CardFooter>
         <DonationModal charityId={id} charityName={name}>
-          <Button className="w-full bg-charity-purple hover:bg-charity-deep-purple">
+          <Button className="w-full bg-charity-purple hover:bg-charity-deep-purple dark:bg-charity-indigo dark:hover:bg-charity-purple">
             Donate Now
           </Button>
         </DonationModal>

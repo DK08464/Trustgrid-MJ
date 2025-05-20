@@ -64,9 +64,11 @@ export default {
           ring: 'hsl(var(--sidebar-ring))'
         },
         charity: {
-          purple: '#8B5CF6',
-          'deep-purple': '#6E59A5',
           teal: '#0EA5E9',
+          cyan: '#22D3EE',
+          purple: '#8B5CF6',
+          indigo: '#6366F1', 
+          'deep-purple': '#6E59A5',
           'light-purple': '#E5DEFF',
         }
       },

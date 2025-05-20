@@ -10,6 +10,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+// Add ethereum property to Window interface
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
+
 const ConnectWallet = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
@@ -52,7 +59,7 @@ const ConnectWallet = () => {
       {!isConnected ? (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-charity-purple to-charity-teal hover:opacity-90">
+            <Button className="bg-gradient-to-r from-charity-purple to-charity-teal hover:opacity-90 dark:from-charity-indigo dark:to-charity-purple">
               Connect Wallet
             </Button>
           </DialogTrigger>
@@ -89,13 +96,13 @@ const ConnectWallet = () => {
         </Dialog>
       ) : (
         <div className="flex items-center">
-          <div className="mr-2 px-4 py-2 bg-charity-light-purple text-charity-purple rounded-full">
+          <div className="mr-2 px-4 py-2 bg-charity-light-purple text-charity-purple dark:bg-gray-800 dark:text-charity-purple rounded-full">
             {shortenAddress(walletAddress)}
           </div>
           <Button 
             variant="ghost" 
             onClick={disconnectWallet}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           >
             Disconnect
           </Button>

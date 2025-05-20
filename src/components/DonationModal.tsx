@@ -21,6 +21,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
+// This interface is already defined in ConnectWallet.tsx, but we include it here as well
+// for completeness since this file also uses window.ethereum
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
+
 interface DonationModalProps {
   children: React.ReactNode;
   charityId: string;
@@ -77,7 +85,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] dark:border-gray-700">
         <DialogHeader>
           <DialogTitle>Donate to {charityName}</DialogTitle>
           <DialogDescription>
@@ -119,7 +127,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({
             </Select>
           </div>
           
-          <div className="mt-2 bg-muted p-4 rounded-lg">
+          <div className="mt-2 bg-muted p-4 rounded-lg dark:bg-gray-800">
             <div className="flex justify-between text-sm mb-2">
               <span>Donation</span>
               <span>{amount} ETH</span>
@@ -139,7 +147,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({
             type="submit" 
             onClick={handleDonation} 
             disabled={isProcessing}
-            className="w-full bg-charity-purple hover:bg-charity-deep-purple"
+            className="w-full bg-charity-purple hover:bg-charity-deep-purple dark:bg-charity-indigo dark:hover:bg-charity-purple"
           >
             {isProcessing ? "Processing..." : "Confirm Donation"}
           </Button>
