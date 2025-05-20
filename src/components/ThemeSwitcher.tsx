@@ -6,7 +6,8 @@ import { Moon, Sun } from "lucide-react";
 const ThemeSwitcher: React.FC = () => {
   const [theme, setTheme] = useState<string>(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme') || 'light';
+      return localStorage.getItem('theme') || 
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     }
     return 'light';
   });
@@ -21,6 +22,20 @@ const ThemeSwitcher: React.FC = () => {
       document.documentElement.classList.remove('dark');
       setTheme('light');
     }
+
+    // Listen for system preference changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      if (!localStorage.getItem('theme')) {
+        setTheme(e.matches ? 'dark' : 'light');
+      }
+    };
+    
+    mediaQuery.addEventListener('change', handleChange);
+    
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+    };
   }, []);
 
   useEffect(() => {
