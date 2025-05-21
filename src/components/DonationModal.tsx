@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { ethers } from 'ethers'; // Keep ethers import for parsing amount
 
 // This interface is already defined in ConnectWallet.tsx, but we include it here as well
 // for completeness since this file also uses window.ethereum
@@ -33,50 +33,52 @@ interface DonationModalProps {
   children: React.ReactNode;
   charityId: string;
   charityName: string;
+  charityPlatformContract: ethers.Contract | null; // Add contract prop
+  onDonate: (charityId: string, amount: string) => Promise<void>; // Add donation handler prop
 }
 
 export const DonationModal: React.FC<DonationModalProps> = ({
   children,
   charityId,
-  charityName
+  charityName,
+  charityPlatformContract,
+  onDonate
 }) => {
-  const [amount, setAmount] = useState<string>('0.1');
+  const [amount, setAmount] = useState<string>('0.01'); // Default donation amount
   const [isOpen, setIsOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
   const handleDonation = async () => {
-    if (!window.ethereum) {
-      toast({
-        title: "Wallet not found",
-        description: "Please install MetaMask or another Ethereum wallet.",
+    if (!charityPlatformContract) {
+       toast({
+        title: "Error",
+        description: "Smart contract not loaded.",
         variant: "destructive"
       });
       return;
     }
-    
-    try {
-      setIsProcessing(true);
-      
-      // This is a mock implementation
-      // In a real app, you would use ethers.js or web3.js to send Ethereum
-      setTimeout(() => {
-        setIsProcessing(false);
-        setIsOpen(false);
-        toast({
-          title: "Thank you for your donation!",
-          description: `You donated ${amount} ETH to ${charityName}.`,
-        });
-      }, 2000);
-      
-    } catch (error) {
-      console.error("Error processing donation:", error);
-      setIsProcessing(false);
-      toast({
-        title: "Donation failed",
-        description: "There was an error processing your donation. Please try again.",
+
+    if (!amount || parseFloat(amount) <= 0) {
+       toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid donation amount.",
         variant: "destructive"
       });
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      await onDonate(charityId, amount); // Call the passed-in donation handler
+      setIsOpen(false); // Close modal on success
+      // Toast is handled by the onDonate function in Index.tsx
+    } catch (error) {
+       console.error("Error during donation process:", error);
+       // Error toast is handled by the onDonate function in Index.tsx
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -142,7 +144,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({
           <Button 
             type="submit" 
             onClick={handleDonation} 
-            disabled={isProcessing}
+            disabled={isProcessing || !charityPlatformContract || !amount || parseFloat(amount) <= 0}
             className="w-full bg-charity-purple hover:bg-charity-deep-purple dark:bg-charity-indigo dark:hover:bg-charity-purple"
           >
             {isProcessing ? "Processing..." : "Confirm Donation"}

@@ -7,20 +7,73 @@ import { ethers } from "ethers";
 
 // Replace with your deployed contract address
 const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
-// Replace with your contract's ABI
+// Replace with your contract's ABI (CharityPlatform ABI)
 const contractABI = [
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: "address",
+        name: "initialOwner",
+        type: "address",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "constructor",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+    ],
+    name: "OwnableInvalidOwner",
+    type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "OwnableUnauthorizedAccount",
+    type: "error",
   },
   {
     anonymous: false,
     inputs: [
       {
         indexed: true,
+        internalType: "string",
+        name: "charityId",
+        type: "string",
+      },
+      {
+        indexed: true,
         internalType: "address",
-        name: "contributor",
+        name: "beneficiary",
+        type: "address",
+      },
+    ],
+    name: "CharityAdded",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "string",
+        name: "charityId",
+        type: "string",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "donor",
         type: "address",
       },
       {
@@ -30,19 +83,154 @@ const contractABI = [
         type: "uint256",
       },
     ],
-    name: "Contribution",
+    name: "DonationReceived",
     type: "event",
   },
   {
-    inputs: [],
-    name: "contribute",
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "string",
+        name: "charityId",
+        type: "string",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "beneficiary",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "FundsWithdrawn",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "previousOwner",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
+    ],
+    name: "OwnershipTransferred",
+    type: "event",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "_charityId",
+        type: "string",
+      },
+      {
+        internalType: "address payable",
+        name: "_beneficiary",
+        type: "address",
+      },
+    ],
+    name: "addCharity",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "_charityId",
+        type: "string",
+      },
+    ],
+    name: "charities",
+    outputs: [
+      {
+        internalType: "address payable",
+        name: "beneficiary",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "totalRaised",
+        type: "uint256",
+      },
+      {
+        internalType: "bool",
+        name: "exists",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "_charityId",
+        type: "string",
+      },
+    ],
+    name: "charityIds",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "_charityId",
+        type: "string",
+      },
+    ],
+    name: "donateToCharity",
     outputs: [],
     stateMutability: "payable",
     type: "function",
   },
   {
     inputs: [],
-    name: "getTotalContributions",
+    name: "getAllCharityIds",
+    outputs: [
+      {
+        internalType: "string[]",
+        name: "",
+        type: "string[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "_charityId",
+        type: "string",
+      },
+    ],
+    name: "getCharityTotalContributions",
     outputs: [
       {
         internalType: "uint256",
@@ -58,7 +246,7 @@ const contractABI = [
     name: "owner",
     outputs: [
       {
-        internalType: "address payable",
+        internalType: "address",
         name: "",
         type: "address",
       },
@@ -67,21 +255,27 @@ const contractABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "totalContributions",
-    outputs: [
+    inputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
       },
     ],
-    stateMutability: "view",
+    name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
-    inputs: [],
-    name: "withdrawAll",
+    inputs: [
+      {
+        internalType: "string",
+        name: "_charityId",
+        type: "string",
+      },
+    ],
+    name: "withdrawCharityFunds",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -89,10 +283,85 @@ const contractABI = [
 ];
 
 const Index: React.FC = () => {
-  const [givingCircleContract, setGivingCircleContract] =
+  const [charityPlatformContract, setCharityPlatformContract] =
     useState<ethers.Contract | null>(null);
-  const [totalContributions, setTotalContributions] = useState<string>("0");
-  const [contributionAmount, setContributionAmount] = useState<string>("");
+  const [charitiesData, setCharitiesData] = useState<CharityProps[]>([]);
+
+  // Mock data for charities - keep existing and add blockchain related fields
+  const initialCharities: CharityProps[] = [
+    {
+      id: "clean-water", // Use a unique ID string for the contract
+      name: "Clean Water Initiative",
+      category: "Environment",
+      image:
+        "https://images.unsplash.com/photo-1581375279679-e9c13fd45e67?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
+      description:
+        "Providing clean water solutions to communities facing water scarcity and contamination issues worldwide.",
+      goal: 5,
+      raised: 0, // This will be updated from the contract
+      donorsCount: 0, // We are not tracking this in the contract yet
+    },
+    {
+      id: "global-education",
+      name: "Global Education Fund",
+      category: "Education",
+      image:
+        "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1173&q=80",
+      description:
+        "Supporting education initiatives and providing resources to underprivileged children around the world.",
+      goal: 8,
+      raised: 0, // This will be updated from the contract
+      donorsCount: 0, // We are not tracking this in the contract yet
+    },
+    {
+      id: "medical-relief",
+      name: "Medical Relief Foundation",
+      category: "Healthcare",
+      image:
+        "https://images.unsplash.com/photo-1631815588090-d4bfec5b1ccb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1632&q=80",
+      description:
+        "Delivering essential medical supplies and healthcare services to regions affected by crisis.",
+      goal: 10,
+      raised: 0, // This will be updated from the contract
+      donorsCount: 0, // We are not tracking this in the contract yet
+    },
+    {
+      id: "refugee-support",
+      name: "Refugee Support Network",
+      category: "Humanitarian",
+      image:
+        "https://images.unsplash.com/photo-1541104486370-474034a4f6b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
+      description:
+        "Providing shelter, food, and essential services to refugees and displaced persons.",
+      goal: 7,
+      raised: 0, // This will be updated from the contract
+      donorsCount: 0, // We are not tracking this in the contract yet
+    },
+    {
+      id: "climate-action",
+      name: "Climate Action Coalition",
+      category: "Environment",
+      image:
+        "https://images.unsplash.com/photo-1611273426858-450e7620370f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
+      description:
+        "Fighting climate change through community-based initiatives and sustainable practices.",
+      goal: 12,
+      raised: 0, // This will be updated from the contract
+      donorsCount: 0, // We are not tracking this in the contract yet
+    },
+    {
+      id: "animal-welfare",
+      name: "Animal Welfare Society",
+      category: "Animals",
+      image:
+        "https://images.unsplash.com/photo-1557456170-0cf4f4d0d362?ixlib=rb-4.0.3&auto=format&fit=crop&w=1074&q=80",
+      description:
+        "Protecting animals from cruelty and providing care for abandoned and injured wildlife.",
+      goal: 6,
+      raised: 0, // This will be updated from the contract
+      donorsCount: 0, // We are not tracking this in the contract yet
+    },
+  ];
 
   useEffect(() => {
     const initializeContract = async () => {
@@ -104,136 +373,72 @@ const Index: React.FC = () => {
           contractABI,
           signer
         );
-        setGivingCircleContract(contract);
+        setCharityPlatformContract(contract);
       }
     };
     initializeContract();
   }, []);
 
-  useEffect(() => {
-    const fetchTotalContributions = async () => {
-      if (givingCircleContract) {
+  // Function to fetch total contributions for each charity
+  const fetchCharityContributions = async (contract: ethers.Contract) => {
+    const updatedCharities = await Promise.all(
+      initialCharities.map(async (charity) => {
         try {
-          const total = await givingCircleContract.getTotalContributions();
-          setTotalContributions(ethers.formatEther(total));
+          const total = await contract.getCharityTotalContributions(charity.id);
+          return {
+            ...charity,
+            raised: parseFloat(ethers.formatEther(total)), // Update raised amount
+          };
         } catch (error) {
-          console.error("Error fetching total contributions: ", error);
+          console.error(
+            `Error fetching contributions for ${charity.name}:`,
+            error
+          );
+          return charity; // Return original charity if fetching fails
         }
-      }
-    };
-    fetchTotalContributions();
+      })
+    );
+    setCharitiesData(updatedCharities);
+  };
 
-    // Listen for the Contribution event
-    if (givingCircleContract) {
-      givingCircleContract.on("Contribution", (contributor, amount) => {
+  useEffect(() => {
+    if (charityPlatformContract) {
+      fetchCharityContributions(charityPlatformContract);
+
+      // Listen for the DonationReceived event
+      const donationFilter = charityPlatformContract.filters.DonationReceived();
+      charityPlatformContract.on(donationFilter, (charityId, donor, amount) => {
         console.log(
-          `Contribution received from ${contributor}: ${ethers.formatEther(
+          `Donation received for charity ${charityId} from ${donor}: ${ethers.formatEther(
             amount
           )} ETH`
         );
-        fetchTotalContributions(); // Refresh total contributions
+        fetchCharityContributions(charityPlatformContract); // Refresh all charity contributions
       });
 
       return () => {
         // Clean up the event listener when the component unmounts
-        givingCircleContract.off("Contribution");
+        charityPlatformContract.off(donationFilter);
       };
     }
-  }, [givingCircleContract]);
+  }, [charityPlatformContract]);
 
-  const handleContribution = async () => {
-    if (givingCircleContract && contributionAmount) {
+  // Function to handle donation to a specific charity
+  const handleCharityDonation = async (charityId: string, amount: string) => {
+    if (charityPlatformContract && amount) {
       try {
-        const amountToSend = ethers.parseEther(contributionAmount);
-        const tx = await givingCircleContract.contribute({
+        const amountToSend = ethers.parseEther(amount);
+        const tx = await charityPlatformContract.donateToCharity(charityId, {
           value: amountToSend,
         });
         await tx.wait(); // Wait for the transaction to be mined
-        setContributionAmount(""); // Clear input after contribution
-        // Total contributions will be updated by the event listener
-        alert("Contribution successful!");
+        alert(`Donation successful to ${charityId}!`);
       } catch (error) {
-        console.error("Error making contribution: ", error);
-        alert("Contribution failed. See console for details.");
+        console.error(`Error making donation to ${charityId}:`, error);
+        alert(`Donation failed to ${charityId}. See console for details.`);
       }
     }
   };
-
-  // Mock data for charities
-  const charities: CharityProps[] = [
-    {
-      id: "1",
-      name: "Clean Water Initiative",
-      category: "Environment",
-      image:
-        "https://images.unsplash.com/photo-1581375279679-e9c13fd45e67?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
-      description:
-        "Providing clean water solutions to communities facing water scarcity and contamination issues worldwide.",
-      goal: 5,
-      raised: 3.2,
-      donorsCount: 128,
-    },
-    {
-      id: "2",
-      name: "Global Education Fund",
-      category: "Education",
-      image:
-        "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1173&q=80",
-      description:
-        "Supporting education initiatives and providing resources to underprivileged children around the world.",
-      goal: 8,
-      raised: 6.7,
-      donorsCount: 342,
-    },
-    {
-      id: "3",
-      name: "Medical Relief Foundation",
-      category: "Healthcare",
-      image:
-        "https://images.unsplash.com/photo-1631815588090-d4bfec5b1ccb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1632&q=80",
-      description:
-        "Delivering essential medical supplies and healthcare services to regions affected by crisis.",
-      goal: 10,
-      raised: 4.3,
-      donorsCount: 213,
-    },
-    {
-      id: "4",
-      name: "Refugee Support Network",
-      category: "Humanitarian",
-      image:
-        "https://images.unsplash.com/photo-1541104486370-474034a4f6b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
-      description:
-        "Providing shelter, food, and essential services to refugees and displaced persons.",
-      goal: 7,
-      raised: 2.8,
-      donorsCount: 176,
-    },
-    {
-      id: "5",
-      name: "Climate Action Coalition",
-      category: "Environment",
-      image:
-        "https://images.unsplash.com/photo-1611273426858-450e7620370f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
-      description:
-        "Fighting climate change through community-based initiatives and sustainable practices.",
-      goal: 12,
-      raised: 8.6,
-      donorsCount: 291,
-    },
-    {
-      id: "6",
-      name: "Animal Welfare Society",
-      category: "Animals",
-      image:
-        "https://images.unsplash.com/photo-1557456170-0cf4f4d0d362?ixlib=rb-4.0.3&auto=format&fit=crop&w=1074&q=80",
-      description:
-        "Protecting animals from cruelty and providing care for abandoned and injured wildlife.",
-      goal: 6,
-      raised: 5.1,
-      donorsCount: 248,
-    },
-  ];
 
   const steps = [
     {
@@ -358,35 +563,16 @@ const Index: React.FC = () => {
               </p>
             </div>
 
-            {/* Giving Circle Interaction */}
-            <div className="text-center mb-12">
-              <h3 className="text-2xl font-bold mb-4 dark:text-white">
-                Giving Circle Contributions
-              </h3>
-              <p className="text-gray-700 mb-4 dark:text-gray-300">
-                Total Contributions: {totalContributions} ETH
-              </p>
-              <div className="flex justify-center items-center gap-4">
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="Amount in ETH"
-                  value={contributionAmount}
-                  onChange={(e) => setContributionAmount(e.target.value)}
-                  className="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
-                <button
-                  onClick={handleContribution}
-                  className="px-6 py-2 bg-charity-purple text-white rounded-lg font-semibold hover:bg-charity-dark-purple transition-colors"
-                >
-                  Contribute
-                </button>
-              </div>
-            </div>
+            {/* Giving Circle Interaction - REMOVED */}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {charities.map((charity) => (
-                <CharityCard key={charity.id} {...charity} />
+              {charitiesData.map((charity) => (
+                <CharityCard
+                  key={charity.id}
+                  {...charity}
+                  charityPlatformContract={charityPlatformContract}
+                  onDonate={handleCharityDonation}
+                />
               ))}
             </div>
 
