@@ -87,17 +87,6 @@ const CharityCard: React.FC<CharityProps> = ({
         <div className="mb-2">
           <Progress value={progress} className="h-2" />
         </div>
-        <div className="flex justify-between text-sm">
-          <span className="font-medium text-charity-purple">
-            {raised} ETH raised
-          </span>
-          <span className="text-gray-500 dark:text-gray-400">
-            Goal: {goal} ETH
-          </span>
-        </div>
-        <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-          {donorsCount} donors have contributed
-        </div>
       </CardContent>
       <CardFooter className="mt-auto">
         <DonationModal

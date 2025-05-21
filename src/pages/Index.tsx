@@ -621,6 +621,61 @@ const Index: React.FC = () => {
     },
   ];
 
+  useEffect(() => {
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const targetId = this.getAttribute('href');
+        if (targetId) {
+          const targetElement = document.querySelector(targetId);
+          if (targetElement) {
+            targetElement.scrollIntoView({
+              behavior: 'smooth'
+            });
+          }
+        }
+      });
+    });
+
+    // Add event listeners to buttons that should scroll
+    const donateNowButton = document.querySelector('.cta-section a[href="#causes"]');
+    if (donateNowButton) {
+      donateNowButton.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector('#causes')?.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+
+    // Clean up event listeners on component unmount
+    return () => {
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.removeEventListener('click', function (e) {
+          e.preventDefault(); // This specific function reference is needed to remove
+
+          const targetId = this.getAttribute('href');
+          if (targetId) {
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+              targetElement.scrollIntoView({
+                behavior: 'smooth'
+              });
+            }
+          }
+        });
+      });
+
+      if (donateNowButton) {
+        donateNowButton.removeEventListener('click', function (e) {
+           e.preventDefault(); // This specific function reference is needed to remove
+           document.querySelector('#causes')?.scrollIntoView({ behavior: 'smooth' });
+        });
+      }
+    };
+
+  }, []); // Empty dependency array ensures this runs once on mount
+
   return (
     <div className="min-h-screen flex flex-col dark:bg-gray-900 dark:text-white">
       <Navbar 
@@ -794,9 +849,12 @@ const Index: React.FC = () => {
               Join thousands of donors who are using cryptocurrency to support
               important causes around the world.
             </p>
-            <button className="px-8 py-4 bg-white text-charity-purple rounded-xl font-semibold hover:bg-opacity-90 transition-colors shadow-lg">
+            <a 
+              href="#causes"
+              className="px-8 py-4 bg-white text-charity-purple rounded-xl font-semibold hover:bg-opacity-90 transition-colors shadow-lg inline-block"
+            >
               Start Donating Now
-            </button>
+            </a>
           </div>
         </section>
       </main>

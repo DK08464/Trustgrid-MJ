@@ -7,7 +7,7 @@ interface HeroSectionProps {
 
 const HeroSection: React.FC<HeroSectionProps> = ({ balance }) => {
   return (
-    <div className="relative pt-20 overflow-hidden">
+    <div id="hero" className="relative pt-20 overflow-hidden">
       {/* Background decorations */}
       <div className="absolute top-20 left-10 w-72 h-72 bg-charity-light-purple rounded-full filter blur-3xl opacity-20 animate-pulse-light"></div>
       <div className="absolute bottom-10 right-10 w-96 h-96 bg-blue-100 rounded-full filter blur-3xl opacity-20"></div>
@@ -22,12 +22,18 @@ const HeroSection: React.FC<HeroSectionProps> = ({ balance }) => {
             Make a difference with cryptocurrency. Direct, transparent, and impactful donations to verified charity communities worldwide.
           </p>
           <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-            <Button className="bg-gradient-to-r from-charity-purple to-charity-teal text-white px-8 py-6 rounded-xl hover:opacity-90 transition-all">
+            <a 
+              href="#causes"
+              className="bg-gradient-to-r from-charity-purple to-charity-teal text-white px-8 py-6 rounded-xl hover:opacity-90 transition-all inline-block"
+            >
               Donate Now
-            </Button>
-            <Button variant="outline" className="px-8 py-6 rounded-xl border-charity-purple text-charity-purple hover:bg-charity-light-purple">
+            </a>
+            <a 
+              href="#how-it-works"
+              className="px-8 py-6 rounded-xl border-2 border-charity-purple text-charity-purple hover:bg-charity-light-purple inline-block transition-colors"
+            >
               Learn More
-            </Button>
+            </a>
           </div>
           
           <div className="mt-10 grid grid-cols-3 gap-4">

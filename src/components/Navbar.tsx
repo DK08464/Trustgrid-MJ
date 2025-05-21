@@ -54,6 +54,9 @@ const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         <nav className="hidden md:flex space-x-6">
+          <a href="#hero" className="text-gray-700 hover:text-charity-purple dark:text-gray-300 dark:hover:text-charity-purple font-medium transition-colors">
+            Home
+          </a>
           <a href="#causes" className="text-gray-700 hover:text-charity-purple dark:text-gray-300 dark:hover:text-charity-purple font-medium transition-colors">
             Causes
           </a>
