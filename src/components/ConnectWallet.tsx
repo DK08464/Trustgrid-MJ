@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import {
@@ -9,6 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ethers } from 'ethers';
 
 // Add ethereum property to Window interface
 declare global {
@@ -17,26 +17,41 @@ declare global {
   }
 }
 
-const ConnectWallet = () => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState('');
+interface ConnectWalletProps {
+  onConnect: (address: string, balance: string) => void;
+  onDisconnect: () => void;
+  isConnected: boolean;
+  walletAddress: string;
+  balance: string;
+}
+
+const ConnectWallet: React.FC<ConnectWalletProps> = ({
+  onConnect,
+  onDisconnect,
+  isConnected,
+  walletAddress,
+  balance
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleConnectWallet = async () => {
-    // This is a mock implementation
-    // In a real app, you would use ethers.js or web3.js to connect to Ethereum
     try {
       if (window.ethereum) {
-        const accounts = await window.ethereum.request({ 
-          method: 'eth_requestAccounts' 
+        const accounts = await window.ethereum.request({
+          method: 'eth_requestAccounts'
         });
-        
+
         const address = accounts[0];
-        setWalletAddress(address);
-        setIsConnected(true);
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const balance = await provider.getBalance(address);
+        const formattedBalance = ethers.formatEther(balance);
+
+        onConnect(address, formattedBalance);
         setIsOpen(false);
-        
+
         console.log("Wallet connected:", address);
+        console.log("Balance:", formattedBalance, "ETH");
+
       } else {
         console.error("Ethereum object not found, install MetaMask.");
       }
@@ -46,8 +61,7 @@ const ConnectWallet = () => {
   };
 
   const disconnectWallet = () => {
-    setIsConnected(false);
-    setWalletAddress('');
+    onDisconnect();
   };
 
   const shortenAddress = (address: string) => {
@@ -97,7 +111,7 @@ const ConnectWallet = () => {
       ) : (
         <div className="flex items-center">
           <div className="mr-2 px-4 py-2 bg-charity-light-purple text-charity-purple dark:bg-gray-800 dark:text-charity-purple rounded-full">
-            {shortenAddress(walletAddress)}
+            {shortenAddress(walletAddress)} ({balance} ETH)
           </div>
           <Button 
             variant="ghost" 

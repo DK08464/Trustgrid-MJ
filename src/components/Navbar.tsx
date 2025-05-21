@@ -1,11 +1,28 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import ConnectWallet from './ConnectWallet';
 import ThemeSwitcher from './ThemeSwitcher';
+import {
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+  isConnected: boolean;
+  walletAddress: string;
+  balance: string;
+  onConnect: (address: string, balance: string) => void;
+  onDisconnect: () => void;
+}
+
+const Navbar: React.FC<NavbarProps> = ({
+  isConnected,
+  walletAddress,
+  balance,
+  onConnect,
+  onDisconnect
+}) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -48,9 +65,15 @@ const Navbar: React.FC = () => {
           </a>
         </nav>
 
-        <div className="flex items-center space-x-2">
+        <div className="hidden md:flex items-center space-x-4">
           <ThemeSwitcher />
-          <ConnectWallet />
+          <ConnectWallet
+            isConnected={isConnected}
+            walletAddress={walletAddress}
+            balance={balance}
+            onConnect={onConnect}
+            onDisconnect={onDisconnect}
+          />
         </div>
       </div>
     </header>

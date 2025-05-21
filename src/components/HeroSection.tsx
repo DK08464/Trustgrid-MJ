@@ -1,8 +1,11 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 
-const HeroSection: React.FC = () => {
+interface HeroSectionProps {
+  balance: string;
+}
+
+const HeroSection: React.FC<HeroSectionProps> = ({ balance }) => {
   return (
     <div className="relative pt-20 overflow-hidden">
       {/* Background decorations */}
@@ -71,7 +74,7 @@ const HeroSection: React.FC = () => {
                 <div className="bg-white/20 backdrop-blur-md rounded-lg p-4">
                   <div className="flex justify-between mb-2">
                     <span className="text-white">Amount</span>
-                    <span className="text-white font-bold">0.5 ETH</span>
+                    <span className="text-white font-bold">{balance} ETH</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white">For charity</span>

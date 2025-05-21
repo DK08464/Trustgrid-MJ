@@ -282,13 +282,21 @@ const contractABI = [
   },
 ];
 
-const Index: React.FC = () => {
-  const [charityPlatformContract, setCharityPlatformContract] =
-    useState<ethers.Contract | null>(null);
-  const [charitiesData, setCharitiesData] = useState<CharityProps[]>([]);
+// Define a type for the initial static charity data
+interface InitialCharityData {
+  id: string;
+  name: string;
+  category: string;
+  image: string;
+  description: string;
+  goal: number;
+  raised: number; // Initial raised is 0, updated from contract
+  donorsCount: number; // Initial donorsCount is 0
+}
 
-  // Mock data for charities - keep existing and add blockchain related fields
-  const initialCharities: CharityProps[] = [
+const Index: React.FC = () => {
+  // Use the new type for the initial data
+  const initialCharities: InitialCharityData[] = [
     {
       id: "clean-water", // Use a unique ID string for the contract
       name: "Clean Water Initiative",
@@ -363,6 +371,25 @@ const Index: React.FC = () => {
     },
   ];
 
+  // State to hold the combined data for rendering CharityCard
+  const [charitiesData, setCharitiesData] = useState<CharityProps[]>([]);
+  const [charityPlatformContract, setCharityPlatformContract] = useState<ethers.Contract | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [walletAddress, setWalletAddress] = useState('');
+  const [balance, setBalance] = useState('0'); // Add balance state
+
+  const handleConnect = (address: string, userBalance: string) => {
+    setIsConnected(true);
+    setWalletAddress(address);
+    setBalance(userBalance);
+  };
+
+  const handleDisconnect = () => {
+    setIsConnected(false);
+    setWalletAddress('');
+    setBalance('0');
+  };
+
   useEffect(() => {
     const initializeContract = async () => {
       if (window.ethereum) {
@@ -374,15 +401,48 @@ const Index: React.FC = () => {
           signer
         );
         setCharityPlatformContract(contract);
+
+        // Fetch initial contributions after contract is loaded
+        fetchCharityContributions(contract, initialCharities);
+
       }
     };
     initializeContract();
+
+    // Listen for account changes in MetaMask
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+
+      return () => {
+        // Clean up the event listener
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+      };
+    }
+
   }, []);
 
+  // Handle account changes in MetaMask
+  const handleAccountsChanged = async (accounts: string[]) => {
+    if (accounts.length === 0) {
+      // MetaMask is locked or the user disconnected all accounts
+      handleDisconnect();
+    } else if (accounts[0] !== walletAddress) {
+      // Account changed
+      const address = accounts[0];
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const balance = await provider.getBalance(address);
+      const formattedBalance = ethers.formatEther(balance);
+      handleConnect(address, formattedBalance); // Re-connect with the new account
+      if(charityPlatformContract) {
+         fetchCharityContributions(charityPlatformContract, initialCharities); // Refresh contributions with new account
+      }
+    }
+  };
+
   // Function to fetch total contributions for each charity
-  const fetchCharityContributions = async (contract: ethers.Contract) => {
+  const fetchCharityContributions = async (contract: ethers.Contract, initialData: InitialCharityData[]) => {
     const updatedCharities = await Promise.all(
-      initialCharities.map(async (charity) => {
+      initialData.map(async (charity) => {
         try {
           const total = await contract.getCharityTotalContributions(charity.id);
           return {
@@ -398,12 +458,17 @@ const Index: React.FC = () => {
         }
       })
     );
-    setCharitiesData(updatedCharities);
+    // Combine with initial data and add contract/onDonate for CharityCard
+    setCharitiesData(updatedCharities.map(charity => ({
+      ...charity,
+      charityPlatformContract: contract,
+      onDonate: handleCharityDonation,
+    })));
   };
 
   useEffect(() => {
     if (charityPlatformContract) {
-      fetchCharityContributions(charityPlatformContract);
+      // fetchCharityContributions(charityPlatformContract);
 
       // Listen for the DonationReceived event
       const donationFilter = charityPlatformContract.filters.DonationReceived();
@@ -413,7 +478,8 @@ const Index: React.FC = () => {
             amount
           )} ETH`
         );
-        fetchCharityContributions(charityPlatformContract); // Refresh all charity contributions
+        // Pass initialCharities to fetchCharityContributions
+        fetchCharityContributions(charityPlatformContract, initialCharities); // Refresh all charity contributions
       });
 
       return () => {
@@ -432,7 +498,20 @@ const Index: React.FC = () => {
           value: amountToSend,
         });
         await tx.wait(); // Wait for the transaction to be mined
+
+        // After successful donation, fetch and update the user's balance
+        if (window.ethereum && walletAddress) {
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const newBalance = await provider.getBalance(walletAddress);
+          setBalance(ethers.formatEther(newBalance));
+        }
+
         alert(`Donation successful to ${charityId}!`);
+        // Also refresh charity contributions after donation
+        if(charityPlatformContract) {
+           fetchCharityContributions(charityPlatformContract, initialCharities);
+        }
+
       } catch (error) {
         console.error(`Error making donation to ${charityId}:`, error);
         alert(`Donation failed to ${charityId}. See console for details.`);
@@ -544,10 +623,16 @@ const Index: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col dark:bg-gray-900 dark:text-white">
-      <Navbar />
+      <Navbar 
+        isConnected={isConnected}
+        walletAddress={walletAddress}
+        balance={balance}
+        onConnect={handleConnect}
+        onDisconnect={handleDisconnect}
+      />
 
       <main>
-        <HeroSection />
+        <HeroSection balance={balance} />
 
         {/* Featured Causes */}
         <section id="causes" className="py-20 bg-white dark:bg-gray-900">
